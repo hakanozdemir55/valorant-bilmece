@@ -1,0 +1,160 @@
+<style>
+    body {
+        background-color: #11141a;
+        color: #ece8e1;
+        font-family: 'Segoe UI', sans-serif;
+        text-align: center;
+        padding-top: 40px;
+    }
+    h1 {
+        color: #ff4655;
+        font-size: 2.8rem;
+        font-weight: 900;
+        letter-spacing: 2px;
+        margin-bottom: 5px;
+    }
+    .alt-baslik {
+        color: #76808c;
+        margin-bottom: 25px;
+    }
+    .kral-box {
+        background-color: #1f2326;
+        border: 2px solid #ff4655;
+        display: inline-block;
+        padding: 35px;
+        border-radius: 4px;
+        width: 520px;
+        text-align: left;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.6);
+    }
+    
+    /* İSTEDİĞİN ETAP BALONCUKLARI (Yanda/Üstte Skor Durumu) */
+    .etap-konteyner {
+        display: block;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    .baloncuk {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #383f47; /* Boş etap */
+        margin: 0 5px;
+        border: 2px solid #11141a;
+        transition: 0.3s;
+    }
+    .baloncuk.dogru {
+        background-color: #00c853; /* Doğru bilinen yeşil */
+        box-shadow: 0 0 8px #00c853;
+    }
+    .baloncuk.yanlis {
+        background-color: #ff1744; /* Yanlış bilinen kırmızı */
+        box-shadow: 0 0 8px #ff1744;
+    }
+    .baloncuk.aktif {
+        border: 2px solid #ff4655;
+        background-color: #ece8e1;
+    }
+
+    .emoji-alani {
+        background-color: #11141a;
+        padding: 25px;
+        border-radius: 4px;
+        text-align: center;
+        font-size: 3rem;
+        margin-bottom: 25px;
+        border-bottom: 4px solid #ff4655;
+    }
+
+    /* İSTEDİĞİN COMBOBOX (Açılır Liste) STİLİ */
+    .combobox-stil {
+        width: 100%;
+        padding: 12px;
+        background-color: #292e33;
+        color: #ece8e1;
+        border: 1px solid #76808c;
+        font-size: 1.1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 10px;
+        margin-bottom: 20px;
+    }
+    .combobox-stil:focus {
+        border-color: #ff4655;
+        outline: none;
+    }
+
+    .btn-val {
+        background-color: #ff4655;
+        color: #ece8e1;
+        border: none;
+        padding: 14px;
+        font-size: 1.1rem;
+        font-weight: bold;
+        width: 100%;
+        cursor: pointer;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 4px;
+    }
+    .btn-val:hover {
+        background-color: #d93b47;
+    }
+    .bitti-ekrani {
+        text-align: center;
+        font-size: 1.3rem;
+    }
+</style>
+
+<h1>VALORANT AGENT GUESSER</h1>
+<p class="alt-baslik">Tur Skorları ve Combobox Seçimli Özel Sürüm 👑</p>
+
+<div class="kral-box">
+
+    <div class="etap-konteyner">
+        <% @toplam_tur.times do |i| %>
+            <% 
+               sinif = ""
+               if session[:skorlar][i] == "dogru"
+                 sinif = "dogru"
+               elsif session[:skorlar][i] == "yanlis"
+                 sinif = "yanlis"
+               elsif i == @guncel_tur
+                 sinif = "aktif"
+               end
+            %>
+            <div class="baloncuk <%= sinif %>" title="Tur <%= i + 1 %>"></div>
+        <% end %>
+    </div>
+
+    <% if @guncel_tur < @toplam_tur %>
+        <div class="emoji-alani">
+            <%= @guncel_ajan[:emojiler] %>
+        </div>
+
+        <p style="font-weight: bold; font-size: 1.1rem; margin-bottom: 5px;">Ajanı Seçin:</p>
+        
+        <%= form_with url: root_path, method: :post, local: true do |f| %>
+            
+            <select name="secilen_ajan" class="combobox-stil" required>
+                <option value="" disabled selected>-- Bir Ajan Kilitleyin --</option>
+                <% @ajan_listesi.map{|a| a[:isim]}.sort.each do |ajan_adi| %>
+                    <option value="<%= ajan_adi %>"><%= ajan_adi %></option>
+                <% end %>
+            </select>
+
+            <%= f.submit "Ajanı Kilitle 🔒", class: "btn-val" %>
+        <% end %>
+
+    <% else %>
+        <div class="bitti-ekrani">
+            <h2 style="color: #00c853;">MAÇ BİTTİ! 🎮</h2>
+            <p>Doğru Sayısı: <strong style="color: #00c853;"><%= session[:skorlar].count("dogru") %></strong></p>
+            <p>Yanlış Sayısı: <strong style="color: #ff1744;"><%= session[:skorlar].count("yanlis") %></strong></p>
+            <br>
+            <%= link_to "YENİDEN BAŞLA 🔄", root_path(reset: true), class: "btn-val", style: "text-decoration: none; display:block; text-align:center;" %>
+        </div>
+    <% end %>
+
+</div>
